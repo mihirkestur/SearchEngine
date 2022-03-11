@@ -1,5 +1,6 @@
 import re
 import unidecode
+import pickle
 import string
 import pandas as pd
 from nltk.tokenize import word_tokenize
@@ -8,6 +9,9 @@ from nltk.stem import PorterStemmer
 ps = PorterStemmer()
 from nltk.stem import WordNetLemmatizer
 lm = WordNetLemmatizer()
+
+PosnPostingList = dict()
+PermIndex = dict()
 
 def PreProcess(text):
     # Convert to lower case i.e. case folding
@@ -61,10 +65,37 @@ def GetPosnPostList(row, docID):
                 PosnPostingList[tokens[t]].append([docID,[t]])
     return row
 
-PosnPostingList = dict()
 
+def Permutize(permIndex, token):
+    temp = token + "$"
+    temp = temp[-1] + temp[:len(temp)-1]
+    permIndex[temp] = token
+    while(temp[-1] != "$"):
+        permIndex[temp] = token
+        temp = temp[-1] + temp[:len(temp)-1]
+
+"""
+Main function to create the posn posting list
+Returns the posn posting list
+"""
 def CreatePosnPostList(documents):
     NumDocs = len(documents)
+    
+    CleanData(documents)
+    
     for doc in range(NumDocs): documents[doc].apply(GetPosnPostList, docID=doc, axis=1)
     pd.DataFrame([(i,j) for i,j in PosnPostingList.items()], columns=["Token", "PositionPostingList"])
+    
+    # Creating the Position Posting list
+    a_file = open("./PosnPostList/Posn.pkl", "wb")
+    pickle.dump(PosnPostingList, a_file)
+    a_file.close()
 
+    # Creating the permuterm index
+    a_file = open("./PosnPostList/Perm.pkl", "wb")
+    for token in PosnPostingList.keys():
+        Permutize(PermIndex, token)
+    pickle.dump(PermIndex, a_file)
+    a_file.close()
+
+    return PosnPostingList
