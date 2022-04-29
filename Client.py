@@ -24,11 +24,20 @@ a_file = open("./PosnPostList/Perm.pkl", "rb")
 PermList = pickle.load(a_file)
 a_file.close()
 
+def clean(row):
+    a = []
+    for i in row:
+        a.append(int(i))
+    a = str(a)
+    
+    return a
+
 if(Search):
     start = time.process_time()
     if("AND" in Query or "OR" in Query):
         try:
             results = pd.DataFrame(performQuery(Query, PostList), columns=["DocID"])
+            results["Position"] = results["Position"].apply(clean)
             st.write(f"Results queried in {time.process_time() - start} s")
             st.write(results)
         except Exception:
@@ -37,6 +46,7 @@ if(Search):
         # see if query term is there, else raise error
         try:
             results = pd.DataFrame(WildCard(Query, PermList, PostList), columns=["DocID", "Position"])
+            results["Position"] = results["Position"].apply(clean)
             st.write(f"Results queried in {time.process_time() - start} s")
             st.write(results)
         except Exception:
@@ -44,14 +54,16 @@ if(Search):
     else:
         # see if query term is there, else raise error
         try:
-            print(PostList[Query])
+            # print(PostList[Query])
             results = pd.DataFrame(PostList[Query], columns=["DocID", "Position"])
+            results["Position"] = results["Position"].apply(clean)
             st.write(f"Results queried in {time.process_time() - start} s")
             st.write(results)
-        except Exception:
+        except Exception as e:
             st.error("Query term not present!")
 
 if(Build):
-    documents = [pd.DataFrame(fetch_20newsgroups(subset='train', categories=[doc]).data, columns=["text"]) for doc in 
-        list(fetch_20newsgroups(subset='train').target_names)]
-    print(ProcessData.CreatePosnPostList(documents[:2]))
+    documents = [pd.DataFrame(fetch_20newsgroups(subset='train', categories=[doc]).data, columns=["text"]) for doc in list(fetch_20newsgroups(subset='train').target_names)]
+    ProcessData.CreatePosnPostList(documents)
+    st.success("Posting list successfully built")
+    
