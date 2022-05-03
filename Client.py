@@ -37,11 +37,12 @@ if(Search):
     if("AND" in Query or "OR" in Query):
         try:
             results = pd.DataFrame(performQuery(Query, PostList), columns=["DocID"])
-            results["Position"] = results["Position"].apply(clean)
+            # results["Position"] = results["Position"].apply(clean)
             st.write(f"Results queried in {time.process_time() - start} s")
             st.write(results)
-        except Exception:
+        except Exception as e:
             st.error("Query term not present!")
+            print(e)
     elif("*" in Query):
         # see if query term is there, else raise error
         try:
