@@ -7,7 +7,7 @@ This is a streamlit application that functions as an elementary search engine. T
 * Wild card queries
 * Boolean queries
 
-As a preprocessing step, a permuterm and a postional posting list is constructed out of any dataset.
+As a preprocessing step, a permuterm and a positional posting list is constructed out of any dataset.
 
 
 ## Application in action!
